@@ -19,7 +19,20 @@ export class NotionApiContentResponsesToBlocks {
       type: nacr.type,
       format: new FormatFilter(nacr.format).filter(),
       properties: new PropertiesParser(nacr.format, nacr.properties).parse(),
-      children: new NotionApiContentResponsesToBlocks(nacr.contents).toBlocks(),
+      children: new NotionApiContentResponsesToBlocks(nacr.contents).toChildBlocks(), // FIXME: ugly hack
+      decorableTexts: new PropTitleToDecorableTexts(nacr.properties?.title).toDecorableTexts(),
+    }));
+  }
+
+  toChildBlocks(): Block[] {
+    if (!this._notionApiContentResponses) return [];
+
+    return this._notionApiContentResponses.map((nacr) => ({
+      id: nacr.id,
+      type: nacr.type == 'page' ? 'subpage' : nacr.type, // the only changed line
+      format: new FormatFilter(nacr.format).filter(),
+      properties: new PropertiesParser(nacr.format, nacr.properties).parse(),
+      children: new NotionApiContentResponsesToBlocks(nacr.contents).toChildBlocks(),
       decorableTexts: new PropTitleToDecorableTexts(nacr.properties?.title).toDecorableTexts(),
     }));
   }
